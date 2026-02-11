@@ -52,7 +52,10 @@ void RPN::evaluate(const std::string& expression)
         else 
         {
             if (_stack.size() < 2)
+            {
                 std::cerr << "Error: Invalid expression" << std::endl;
+                return;
+            }
             else
             {
                 int value =  _stack.top();
@@ -76,12 +79,16 @@ void RPN::evaluate(const std::string& expression)
                         _stack.push(second_value - value);
                         break;
                     default:
-                        std::cout << "Error: Invalid operator" << std::endl;
+                        std::cerr << "Error: Invalid operator" << std::endl;
                         return ;
                 }
-                std::cout << "value: " << value << " second value: " << second_value << " result: " << _stack.top() << std::endl;
             } 
         }
+    }
+    if (_stack.size() != 1)
+    {
+        std::cerr << "Error: Invalid expression" << std::endl;
+        return ;
     }
     std::cout << _stack.top() << std::endl;
 }
