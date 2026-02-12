@@ -1,7 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <chrono>
-#include "PmergeMe.hpp"
+
 void print_arr( std::vector <int>arr)
 {
     for(unsigned long i =0; i< arr.size();i++)
@@ -16,7 +16,20 @@ void merge (std::vector <int>&arr ,std::vector <int>&leftarr, std::vector <int>&
     int j=0;
     int k=0;
 
-
+    while ( i < leftsize && j < rightsize)
+    {
+        if (leftarr.at(i) <= rightarr.at(j))
+        {
+            arr.at(k) = leftarr.at(i);
+            i++;
+        }
+        else
+        {
+            arr.at(k) = rightarr.at(j);
+            j++;
+        }
+        k++;
+    }
     for (; i < leftsize; i++)
     {
        arr.at(k) = leftarr.at(i);
@@ -31,16 +44,6 @@ void merge (std::vector <int>&arr ,std::vector <int>&leftarr, std::vector <int>&
 void mergeSort(std::vector <int>&arr)
 {
     int length = arr.size();
-    if (length == 2)
-    {
-        if (arr.at(1) < arr.at(0))
-        {
-            int tmp = arr.at(0);
-            arr.at(0) = arr.at(1);
-            arr.at(1) = tmp;
-        }
-        return;
-    }
     if (length < 2)
         return;
     int mid = arr.size() / 2;
@@ -53,33 +56,19 @@ void mergeSort(std::vector <int>&arr)
         rightarr.at(i - mid) = arr.at(i);
     mergeSort(leftarr);
     mergeSort(rightarr);
+
     merge(arr,leftarr,rightarr);
 
 }
 
-std::vector<int>& PmergeMe::insertnumbers(std::string &ref)
-{
-    std::vector<int> numbers;
-    std::stringstream ss(ref);
-    int n;
-    while (ss >> n)
-        numbers.push_back(n);
-    return (numbers);
-}
-void PmergeMe::sort(std::string &str)
-{
-    std::vector<int> numbers;
-    insertnumbers(str);
-
-}
 int main()
 {
      auto start = std::chrono::high_resolution_clock::now();
     srand(time(NULL));
-    std::vector <int>arr(10);
+    std::vector <int>arr(1000);
     
     for (unsigned long i =0; i < arr.size(); i++ )
-        arr.at(i) = rand() % 10;
+        arr.at(i) = rand() % 1000;
     print_arr(arr);
     mergeSort(arr);
     print_arr(arr);
