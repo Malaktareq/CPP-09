@@ -8,56 +8,55 @@ void print_arr( std::vector <int>arr)
         std::cout << arr.at(i) << " ";
     std::cout << std::endl;
 }
-void merge (std::vector <int>&arr ,std::vector <int>&leftarr, std::vector <int>&rightarr)
-{
-    int leftsize = leftarr.size();
-    int rightsize = rightarr.size();
-    int i=0;
-    int j=0;
-    int k=0;
 
-
-    for (; i < leftsize; i++)
-    {
-       arr.at(k) = leftarr.at(i);
-       k++;
-    }
-    for (; j < rightsize; j++)
-    {
-       arr.at(k) = rightarr.at(j);
-       k++;
-    }
-}
-void mergeSort(std::vector <int>&arr)
+std::vector<std::pair<int,int> > PmergeMe::make_pairs(std::vector<int> numbers)
 {
-    int length = arr.size();
-    if (length == 2)
+    std::vector<std::pair<int,int> > pairs;
+    for (size_t i = 0; i < numbers.size(); i += 2)
     {
-        if (arr.at(1) < arr.at(0))
+        if (i + 1 < numbers.size())
         {
-            int tmp = arr.at(0);
-            arr.at(0) = arr.at(1);
-            arr.at(1) = tmp;
+            if (numbers[i] > numbers[i + 1])
+                std::swap(numbers[i], numbers[i + 1]);
+            pairs.push_back(std::make_pair(numbers[i], numbers[i + 1]));
         }
-        return;
+        else
+            pairs.push_back(std::make_pair(-1, numbers[i]));   
     }
-    if (length < 2)
-        return;
-    int mid = arr.size() / 2;
-    std::vector <int>leftarr(mid);
-    std::vector <int>rightarr(arr.size() - mid);
-
-    for (int i = 0 ; i < mid; i++)
-        leftarr.at(i) = arr.at(i);
-    for (int i = mid ; i < length;i++)
-        rightarr.at(i - mid) = arr.at(i);
-    mergeSort(leftarr);
-    mergeSort(rightarr);
-    merge(arr,leftarr,rightarr);
-
+    return pairs;
+}
+std::vector<int> PmergeMe::Jacobsthal(int n)
+{
+    std::vector<int> jacobsthal;
+    int num;
+    jacobsthal.push_back(0);
+    jacobsthal.push_back(1);
+    num = 1;
+    for (int i = 2; num < n; i++)
+    {
+        num = jacobsthal[i - 1] + 2 * jacobsthal[i - 2];
+        jacobsthal.push_back(num);
+    }
+    return jacobsthal;
 }
 
-std::vector<int>& PmergeMe::insertnumbers(std::string &ref)
+std::vector<int> PmergeMe::Insert_order(std::vector<int> Jacob, int size)
+{
+    std::vector<int> order;
+    order.push_back(1);
+    for (size_t i = 2; i < Jacob.size(); i++)
+    {
+        int current;
+        if (Jacob[i] < size)
+            current = Jacob[i];
+        else
+            current = size;
+        for(int j = current; j > Jacob[i - 1]; j--)
+            order.push_back(j);
+    }
+    return order;
+}
+std::vector<int> PmergeMe::insertnumbers(std::string &ref)
 {
     std::vector<int> numbers;
     std::stringstream ss(ref);
@@ -66,15 +65,70 @@ std::vector<int>& PmergeMe::insertnumbers(std::string &ref)
         numbers.push_back(n);
     return (numbers);
 }
+void PmergeMe::binary_insert(std::vector<std::pair<int,int> >& main_chain ,std::vector<std::pair<int,int> > main2_chain, std::vector<int> order)
+{
+    std::vector<int>::reverse_iterator it;
+    std::vector<std::pair<int,int> >::iterator it2;
+
+    it = order.rbegin();
+    if (main2_chain[*it - 1].second == main_chain[*it].first)
+        std::swap(main_chain[*it - 1], main_chain[*it]);
+    it++;
+    while (!order.empty())
+    {
+        int place = *it - 1;
+        if(main2_chain[*it - 1].second ==  main_chain[*it].first)
+            place = *it;
+        for(int i = 0 ; i < *it ; i++)
+        {
+           it2 = std::lower_bound(main_chain.begin(), main_chain.end(), main2_chain[*it - 1].second);
+           swap(main_chain[place], *it2);
+        }
+        it++;
+    }
+}
+void PmergeMe::algo(std::vector<std::pair<int,int> >& pairs)
+{
+    std::vector<int> main_chain;
+    std::vector<std::pair<int,int> >::iterator it;
+
+    int len;
+    if (pairs.empty())
+        return;
+    it = pairs.begin();
+    for (; it != pairs.end(); ++it)
+    {
+        if (it->first != -1)
+            main_chain.push_back(it->first);
+    }
+    len = main_chain.size() / 2;
+    if (main_chain.size() % 2)
+        len = main_chain.size() / 2 + 1;
+    algo(pairs);
+    binary_insert(pairs, make_pairs(main_chain), Insert_order(Jacobsthal(len), len));
+
+}
 void PmergeMe::sort(std::string &str)
 {
     std::vector<int> numbers;
-    insertnumbers(str);
-
+    std::vector<std::pair<int,int> > pairs;
+    numbers = insertnumbers(str);
+    pairs = make_pairs(numbers);
+    std::cout << "Before sorting: ";
+    for (size_t i = 0; i < numbers.size(); i++)
+        std::cout << numbers[i] << " ";
+    std::cout << std::endl;
+    algo(pairs);
+    std::cout << "After sorting: ";
+    for (size_t i = 0; i < pairs.size(); i++)
+        std::cout << pairs[i].first << " ";
+    std::cout << std::endl;
+     for (size_t i = 0; i < pairs.size(); i++)
+        std::cout << pairs[i].second << " ";
+        std::cout << std::endl;
 }
 int main()
 {
-     auto start = std::chrono::high_resolution_clock::now();
     srand(time(NULL));
     std::vector <int>arr(10);
     
@@ -83,9 +137,6 @@ int main()
     print_arr(arr);
     mergeSort(arr);
     print_arr(arr);
-    auto end = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-    std::cout << "Execution time: " << duration.count() << " microseconds" << std::endl;
 
     return (0);
 }
