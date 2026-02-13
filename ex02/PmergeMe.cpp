@@ -133,7 +133,7 @@ std::vector<int> algo(std::vector<int> numbers)
     for (size_t i = 0; i < pairs.size(); i++) 
         winners.push_back(pairs[i].first); 
     std::vector<int> sorted_winners_ints = algo(winners); 
-
+    std::vector<bool> used(pairs.size(), false);
     std::vector<std::pair<int,int> > chain;
     std::vector<int> pend;
 
@@ -141,10 +141,11 @@ std::vector<int> algo(std::vector<int> numbers)
     {
         for (size_t j = 0; j < pairs.size(); j++)
         {
-            if (pairs[j].first == sorted_winners_ints[i])
+            if (!used[j] &&pairs[j].first == sorted_winners_ints[i])
             {
                 chain.push_back(pairs[j]);
                 pend.push_back(pairs[j].second);
+                used[j] = true;
                 break;
             }
         }
